@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are an emotion detection assistant. Given a user statement, return a tag for the emotion: happy, sad, angry, stressed, anxious, tired.",
+            "You are an emotion detection assistant. Given a user statement, return a tag for the emotion: happy, sad, angry, stressed, anxious, tired. If an statement doesn't contain enough information or an emotion is not detectable, categorize as unknown.",
         },
         {
           role: "user",
