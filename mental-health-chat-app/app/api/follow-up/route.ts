@@ -6,28 +6,36 @@ const TELNYX_CHAT_URL = "https://api.telnyx.com/v2/ai/chat/completions";
 
 export async function POST(req: Request) {
   try {
-    const { userResponse, emotionTag } = await req.json();
+    const { emotionTag, history, currentQA } = await req.json();
 
-    const messages = [
-      {
-        role: "system",
-        content: `
+    if (!emotionTag || !currentQA?.question || !currentQA?.answer || !Array.isArray(history)) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    const historyText = history
+      .map((item, index) => `Q${index + 1}: ${item.question}\nA${index + 1}: ${item.answer}`)
+      .join("\n");
+
+    const prompt = `
 You are a compassionate mental health assistant.
 
 You are helping a user who is currently feeling: "${emotionTag}".
 
-Based on their emotional tone and recent response, ask a smart follow-up question that:
-- Dives further on what the user is feeling and focuses on emotional well-being.
-- Feels emotionally attuned.
+Here is the conversation so far:
 
-Respond with one gentle question (ONLY THE QUESTION).
-        `,
-      },
-      {
-        role: "user",
-        content: userResponse,
-      },
-    ];
+${historyText}
+
+Current:
+Q: ${currentQA.question}
+A: ${currentQA.answer}
+
+Your task:
+- Based on this full context, ask a supportive and emotionally intelligent follow-up question.
+- Avoid repeating topics/questions already asked.
+- Help the user reflect deeper or explore their emotions safely.
+
+Reply with just the next follow-up question. DO NOT include anything else.
+    `.trim();
 
     const response = await fetch(TELNYX_CHAT_URL, {
       method: "POST",
@@ -38,7 +46,16 @@ Respond with one gentle question (ONLY THE QUESTION).
       body: JSON.stringify({
         model: "openai/gpt-4o",
         openai_api_key: OPENAI_API_KEY,
-        messages,
+        messages: [
+          {
+            role: "system",
+            content: "You generate emotionally supportive follow-up questions in a mental health conversation.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
       }),
     });
 
@@ -62,6 +79,7 @@ Respond with one gentle question (ONLY THE QUESTION).
     );
   }
 }
+
 
 
 

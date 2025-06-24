@@ -9,7 +9,6 @@ import { getPreferredVoice } from "./utils";
 import { calculateEmotionIntensity } from "./utils";
 
 export default function MentalHealthChat() {
-
   const [step, setStep] = useState(0);
   const [prompts, setPrompts] = useState<string[]>([]);
   const [responses, setResponses] = useState<string[]>([]);
@@ -153,17 +152,41 @@ export default function MentalHealthChat() {
       const emotionRes = await fetch("/api/emotion-tag", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: userResponse }),
+        body: JSON.stringify({
+          prompt: prompts[step],
+          response: userResponse,
+        }),
       });
+
       const emotionData = await emotionRes.json();
       const emotionTag = emotionData.tag;
-
       setEmotionTags((prev) => [...prev, emotionTag]);
+
+      const history = prompts.slice(0, step).map((question, i) => ({
+        question,
+        answer: responses[i]
+      }));
+
+      console.log("🧠 Sending follow-up request with:", {
+        emotionTag,
+        history: prompts.slice(0, step).map((q, i) => ({ question: q, answer: responses[i] })),
+        currentQA: {
+          question: prompts[step],
+          answer: userResponse,
+        },
+      });
 
       const followUpRes = await fetch("/api/follow-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userResponse, emotionTag }),
+        body: JSON.stringify({
+          emotionTag,
+          history,
+          currentQA: {
+            question: prompts[step],
+            answer: userResponse
+          }
+        }),
       });
 
       const { question: nextPrompt } = await followUpRes.json();
@@ -175,120 +198,120 @@ export default function MentalHealthChat() {
       } else {
         setShowReview(true);
       }
-
     } catch (err) {
-    console.error("❌ Error during next step logic:", err);
-    alert("Something went wrong. Please try again.");
-  }
-};
+      console.error("❌ Error during next step logic:", err);
+      alert("Something went wrong. Please try again.");
+    }
+  };
 
-const generateFeedback = async () => {
-  setLoading(true);
-  const summary = prompts.map((q, i) => `Q: ${q}\nA: ${responses[i]}`).join("\n\n");
+  const generateFeedback = async () => {
+    setLoading(true);
+    const summary = prompts.map((q, i) => `Q: ${q}\nA: ${responses[i]}`).join("\n\n");
 
-  const res = await fetch("/api/get-feedback", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ summary }),
-  });
+    const res = await fetch("/api/get-feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ summary }),
+    });
 
-  const data = await res.json();
-  const intensity = calculateEmotionIntensity(emotionTags);
+    const data = await res.json();
+    const intensity = calculateEmotionIntensity(emotionTags);
 
-  localStorage.setItem("ai_feedback", data.feedback);
-  localStorage.setItem("emotion_intensity", JSON.stringify(intensity));
-  localStorage.setItem("allow_location", allowLocation.toString());
+    localStorage.setItem("ai_feedback", data.feedback);
+    localStorage.setItem("emotion_intensity", JSON.stringify(intensity));
+    localStorage.setItem("allow_location", allowLocation.toString());
 
-  setLoading(false);
-  router.push("/feedback");
-};
+    setLoading(false);
+    router.push("/feedback");
+  };
 
-if (showReview) {
-  return (
-    <div className="review-bg">
-      <div className="review-card">
-        <h1 className="main-title">Review and Edit Your Responses</h1>
-        <div className="review-list">
-          {prompts.map((prompt, i) => (
-            <div key={i} className="review-item">
-              <div className="prompt">{prompt}</div>
-              <Textarea
-                value={responses[i]}
-                onChange={(e) => handleResponseChange(i, e.target.value)}
-                className="main-textarea"
+  if (showReview) {
+    return (
+      <div className="review-bg">
+        <div className="review-card">
+          <h1 className="main-title">Review and Edit Your Responses</h1>
+          <div className="review-list">
+            {prompts.map((prompt, i) => (
+              <div key={i} className="review-item">
+                <div className="prompt">{prompt}</div>
+                <Textarea
+                  value={responses[i]}
+                  onChange={(e) => handleResponseChange(i, e.target.value)}
+                  className="main-textarea"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={allowLocation}
+                onChange={(e) => setAllowLocation(e.target.checked)}
               />
-            </div>
-          ))}
-        </div>
-        <div className="mt-4">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={allowLocation}
-              onChange={(e) => setAllowLocation(e.target.checked)}
-            />
-            <span className="checkbox-text">
-              Show nearby providers based on my location
-            </span>
-          </label>
-        </div>
+              <span className="checkbox-text">
+                Show nearby providers based on my location
+              </span>
+            </label>
+          </div>
 
-        <Button
-          onClick={generateFeedback}
-          disabled={loading}
-          className="main-btn"
-        >
-          {loading ? "Generating Results..." : "Get Results"}
-        </Button>
+          <Button
+            onClick={generateFeedback}
+            disabled={loading}
+            className="main-btn"
+          >
+            {loading ? "Generating Results..." : "Get Results"}
+          </Button>
+        </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <>
+      <header className="header">lightmood</header>
+      <div className="app-center">
+        <div className="card">
+          <CardContent>
+            {step === 0 && prompts[0] && (
+              <h1 className="main-title">{prompts[0].split(". ")[0]}.</h1>
+            )}
+            <div className="prompt centered-prompt">
+              {step === 0 && prompts[0] ? (
+                <div>{prompts[0].split(". ")[1]}</div>
+              ) : (
+                <div>{prompts[step]}</div>
+              )}
+            </div>
+
+            <div className="button-row">
+              <Button onClick={() => speak(prompts[step])} className="main-btn">🔊 Read</Button>
+              <Button onClick={startRecording} disabled={recording} className="main-btn">🎙️ Record</Button>
+              <Button onClick={stopRecording} disabled={!recording} className="main-btn">⏹️ Stop</Button>
+            </div>
+
+            <Textarea
+              placeholder="Record or type your response..."
+              value={responses[step] || ""}
+              onChange={(e) => handleResponseChange(step, e.target.value)}
+              className="main-textarea"
+            />
+
+            <div style={{ textAlign: "right" }}>
+              <Button
+                onClick={handleNext}
+                className={step < 4 ? "main-btn" : "main-btn green"}
+              >
+                {step < 4 ? "Next" : "Review All"}
+              </Button>
+            </div>
+          </CardContent>
+        </div>
+      </div>
+    </>
   );
 }
 
-return (
-  <>
-    <header className="header">lightmood</header>
-    <div className="app-center">
-      <div className="card">
-        <CardContent>
-          {step === 0 && prompts[0] && (
-            <h1 className="main-title">{prompts[0].split(". ")[0]}.</h1>
-          )}
-          <div className="prompt centered-prompt">
-            {step === 0 && prompts[0] ? (
-              <div>{prompts[0].split(". ")[1]}</div>
-            ) : (
-              <div>{prompts[step]}</div>
-            )}
-          </div>
-
-          <div className="button-row">
-            <Button onClick={() => speak(prompts[step])} className="main-btn">🔊 Read</Button>
-            <Button onClick={startRecording} disabled={recording} className="main-btn">🎙️ Record</Button>
-            <Button onClick={stopRecording} disabled={!recording} className="main-btn">⏹️ Stop</Button>
-          </div>
-
-          <Textarea
-            placeholder="Record or type your response..."
-            value={responses[step] || ""}
-            onChange={(e) => handleResponseChange(step, e.target.value)}
-            className="main-textarea"
-          />
-
-          <div style={{ textAlign: "right" }}>
-            <Button
-              onClick={handleNext}
-              className={step < 4 ? "main-btn" : "main-btn green"}
-            >
-              {step < 4 ? "Next" : "Review All"}
-            </Button>
-          </div>
-        </CardContent>
-      </div>
-    </div>
-  </>
-);
-}
 
 
 
