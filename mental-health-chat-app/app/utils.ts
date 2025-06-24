@@ -9,10 +9,14 @@ export function getPreferredVoice(voices: SpeechSynthesisVoice[]) {
 }
 
 export function calculateEmotionIntensity(tags: string[]): Record<string, number> {
-  const total = tags.length;
+  const filteredTags = tags.filter(tag => tag !== "unknown");
+  const total = filteredTags.length;
+
+  if (total === 0) return {};
+
   const counts: Record<string, number> = {};
 
-  for (const tag of tags) {
+  for (const tag of filteredTags) {
     counts[tag] = (counts[tag] || 0) + 1;
   }
 
