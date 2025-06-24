@@ -1,0 +1,350 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+html, body {
+  font-family: 'Open Sans', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ffc0cb;
+  color: #4B296B;
+  height: 100%;
+  min-height: 100vh;
+}
+
+.app-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.card {
+  background: #FFFEF4;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(30, 58, 138, 0.08);
+  padding: 2rem 2.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+h1, .main-title, .prompt {
+  color: #4B296B;
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-weight: 700;
+}
+
+h1, .main-title {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.prompt {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.centered-prompt {
+  text-align: center;
+}
+
+.header {
+  background-color: white;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4B296B;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-transform: lowercase;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  padding: 0;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.button, .main-btn {
+  background: #BAF2E9;
+  color: #4B296B;
+  border: none;
+  border-radius: 14px;
+  padding: 0.6rem 1.4rem;
+  font-size: 1.08rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  margin-right: 0.3rem;
+}
+
+.button:disabled, .main-btn:disabled {
+  background: #e0e0e0;
+  color: #a3a3a3;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.button:hover:not(:disabled), .main-btn:hover:not(:disabled) {
+  background: #8de5de;
+  color: #4B296B;
+}
+
+.button.green, .main-btn.green {
+  background: #22c55e;
+  color: #fff;
+}
+.button.green:hover:not(:disabled), .main-btn.green:hover:not(:disabled) {
+  background: #16a34a;
+  color: #fff;
+}
+
+textarea, .main-textarea {
+  width: 100%;
+  min-height: 64px;
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #BAF2E9;
+  margin-bottom: 1rem;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.next-btn {
+  float: right;
+  margin-top: 0.5rem;
+}
+
+.review-bg {
+  min-height: 100vh;
+  background: #ffc0cb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 0.1rem;
+}
+
+.review-card {
+  background: #FFFEF4;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(30, 58, 138, 0.09);
+  padding: 1.6rem 1.4rem 1.1rem 1.4rem;
+  max-width: 500px;
+  width: 100%;
+  margin: 1.3rem auto 1rem auto;
+  color: #4B296B;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  box-sizing: border-box;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-height: 54vh;
+  overflow-y: auto;
+  margin-bottom: 1.2rem;
+}
+
+.review-item .prompt {
+  font-size: 1.06rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #4B296B;
+}
+
+/* Bold + italic for checkbox label text */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-text {
+  font-weight: bold;
+}
+
+/* Feedback Page */
+.feedback-card {
+  background: #FFFEF4;
+  border-radius: 22px;
+  box-shadow: 0 2px 16px rgba(30, 58, 138, 0.08);
+  padding: 1.4rem 1.5rem 1.1rem 1.5rem;
+  max-width: 900px;
+  margin: 2rem auto 1.5rem auto;
+  font-family: 'Open Sans', Arial, sans-serif;
+  color: #4B296B;
+  overflow-x: hidden;
+}
+
+.feedback-title {
+  text-align: center;
+  font-size: 1.38rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  color: #4B296B;
+  line-height: 1.25;
+}
+
+.feedback-btn {
+  background: #BAF2E9;
+  color: #4B296B;
+  border: none;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.2rem;
+  transition: background 0.2s, color 0.2s;
+  display: block;
+  margin-left: auto;
+}
+
+.feedback-btn:hover {
+  background: #8de5de;
+}
+
+.feedback-btn.center {
+  display: block;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.providers-card {
+  background-color: #f4f6fa;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.providers-list {
+  list-style: none;
+  padding: 0;
+}
+
+.provider-item {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ccc;
+}
+
+.provider-item a {
+  color: #0077cc;
+  text-decoration: none;
+}
+
+.provider-item a:hover {
+  text-decoration: underline;
+}
+
+/* Suggestions */
+.suggestion-section {
+  margin-top: 2rem;
+}
+
+.suggestion-title {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.suggestion-number {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4B296B;
+  margin-bottom: 0.4rem;
+}
+
+.suggestion-cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.suggestion-card {
+  background-color: #fefefe;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-card:hover {
+  transform: translateY(-4px);
+}
+
+.suggestion-card h3 {
+  font-size: 1.03rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #4B296B;
+}
+
+.suggestion-card p {
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Emotion Chart */
+.emotion-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.emotion-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.emotion-circle svg {
+  height: 60px;
+  width: 60px;
+}
+
+.emotion-label {
+  margin-top: 0.3rem;
+  font-size: 0.9
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
