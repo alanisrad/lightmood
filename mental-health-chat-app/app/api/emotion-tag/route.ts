@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 
+const TELNYX_API_KEY = process.env.TELNYX_API_KEY!;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
+const TELNYX_CHAT_URL = "https://api.telnyx.com/v2/ai/chat/completions";
+
 export async function POST(req: Request) {
   const { prompt, response } = await req.json();
 
@@ -9,14 +13,15 @@ export async function POST(req: Request) {
 
   const fullText = `${prompt.trim()} ${response.trim()}`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch(TELNYX_CHAT_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${TELNYX_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4",
+      model: "openai/gpt-4o",
+      openai_api_key: OPENAI_API_KEY,
       messages: [
         {
           role: "system",
@@ -43,5 +48,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ tag });
 }
+
 
 

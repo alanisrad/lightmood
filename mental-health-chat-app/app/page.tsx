@@ -18,6 +18,7 @@ export default function MentalHealthChat() {
   const [recording, setRecording] = useState(false);
   const [preferredVoice, setPreferredVoice] = useState<SpeechSynthesisVoice | null>(null);
   const [allowLocation, setAllowLocation] = useState(false);
+  const [isNextDisabled, setIsNextDisabled] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -125,13 +126,18 @@ export default function MentalHealthChat() {
   };
 
   const handleNext = async () => {
+    if (isNextDisabled) return; // prevent multiple clicks
+
     const userResponse = responses[step].trim();
     if (!userResponse) {
       alert("Please type or record a response before continuing.");
       return;
     }
 
+    setIsNextDisabled(true); // disable button to prevent double submission
+
     try {
+      // Check for emergencies
       const emergencyRes = await fetch("/api/emergency-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -141,7 +147,7 @@ export default function MentalHealthChat() {
 
       if (emergencyData.level === "urgent") {
         speak("Your response may indicate an emergency. Please consider reaching out to a mental health professional or calling a crisis line near you.");
-        const proceed = window.confirm("⚠️ Would you like to continue with the check-in, or stop here and seek professional help?");
+        const proceed = window.confirm("⚠️ Would you like to continue with the check-in, or stop here and seek professional help?\n\nClick OK to continue or CANCEL to stop.");
         if (!proceed) {
           window.open("https://988lifeline.org", "_blank");
           return;
@@ -149,6 +155,7 @@ export default function MentalHealthChat() {
         alert("Please remember this check-in does not replace professional support.");
       }
 
+      // Get emotion tag
       const emotionRes = await fetch("/api/emotion-tag", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -157,24 +164,16 @@ export default function MentalHealthChat() {
           response: userResponse,
         }),
       });
-
       const emotionData = await emotionRes.json();
       const emotionTag = emotionData.tag;
+
       setEmotionTags((prev) => [...prev, emotionTag]);
 
-      const history = prompts.slice(0, step).map((question, i) => ({
-        question,
-        answer: responses[i]
+      // Generate follow-up question
+      const history = prompts.slice(0, step).map((q, i) => ({
+        question: q,
+        answer: responses[i],
       }));
-
-      console.log("🧠 Sending follow-up request with:", {
-        emotionTag,
-        history: prompts.slice(0, step).map((q, i) => ({ question: q, answer: responses[i] })),
-        currentQA: {
-          question: prompts[step],
-          answer: userResponse,
-        },
-      });
 
       const followUpRes = await fetch("/api/follow-up", {
         method: "POST",
@@ -184,8 +183,8 @@ export default function MentalHealthChat() {
           history,
           currentQA: {
             question: prompts[step],
-            answer: userResponse
-          }
+            answer: userResponse,
+          },
         }),
       });
 
@@ -201,6 +200,8 @@ export default function MentalHealthChat() {
     } catch (err) {
       console.error("❌ Error during next step logic:", err);
       alert("Something went wrong. Please try again.");
+    } finally {
+      setIsNextDisabled(false); // Re-enable the button
     }
   };
 
